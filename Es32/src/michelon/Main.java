@@ -4,9 +4,9 @@ import java.util.Random;
 import java.util.concurrent.Semaphore;
 
 public class Main {
-	private static final int NUM_CHAIRS = 4;
-    private static final int MAX_WAIT_TIME = 5000;
-    private static final int MAX_DRAWING_TIME = 3000;
+	static final int NUM_CHAIRS = 4;
+    static final int MAX_WAIT_TIME = 5000;
+    static final int MAX_DRAWING_TIME = 3000;
 
     private static Semaphore chairsSemaphore;
     private static Semaphore artistSemaphore;
