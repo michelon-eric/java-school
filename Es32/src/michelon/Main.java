@@ -15,7 +15,7 @@ public class Main {
 		chairsSemaphore = new Semaphore(NUM_CHAIRS);
         artistSemaphore = new Semaphore(1);
 
-		Thread artistThread = new Thread(new StreetArtist());
+		Thread artistThread = new Thread(new StreetArtist(artistSemaphore, chairsSemaphore));
 		artistThread.start();
 
 		Random random = new Random();
@@ -30,8 +30,7 @@ public class Main {
                 e.printStackTrace();
             }
 
-            Thread customerThread = new Thread(new Customer(customerCount));
-            customerThread.start();
+           new Thread(new Customer(customerCount, chairsSemaphore, artistSemaphore)).start();
 
             customerCount++;
         }
