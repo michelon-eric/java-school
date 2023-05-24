@@ -2,39 +2,50 @@ package michelon;
 
 import java.util.Random;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 public class Customer implements Runnable {
     private final int id;
-    private final Semaphore semaphore, artistSemaphore;
+    private final Semaphore chairsSemaphore;
+    private final Semaphore artistSemaphore;
 
-    public Customer(int id, Semaphore customerSemaphore, Semaphore artistSemaphore) {
+    private final Color outputColor;
+
+    public Customer(int id, Semaphore chairsSemaphore, Semaphore artistSemaphore) {
         this.id = id;
-        this.semaphore = customerSemaphore;
+
+        this.chairsSemaphore = chairsSemaphore;
         this.artistSemaphore = artistSemaphore;
+
+        outputColor = Color.random();
     }
 
     @Override
     public void run() {
-        System.out.println("Customer " + id + " arrived");
-
-        if (!semaphore.tryAcquire()) {
-            System.out.println("Customer " + id + " failed to get a seat");
-            return;
-        }
-
+        print("Client arrived");
         try {
-            artistSemaphore.acquire();
-            System.out.println("Customer " + id + " is getting their painting done");
+            if (!chairsSemaphore.tryAcquire(Data.MIN_WAIT_TIME + new Random().nextInt(Data.MAX_WAIT_TIME),
+                    TimeUnit.MILLISECONDS)) {
+                print("Client is leaving");
+                return;
+            }
 
-            Thread.sleep(new Random().nextInt(Main.MAX_DRAWING_TIME));
+            while (true) {
+                if (!artistSemaphore.tryAcquire())
+                    continue;
 
-            System.out.println("Customer " + id + " got the painting");
-
-            artistSemaphore.release();
-            semaphore.release();
+                Thread.sleep(Data.MIN_DRAWING_TIME + new Random().nextInt(Data.MAX_DRAWING_TIME));
+                print("Customer got the painting");
+                chairsSemaphore.release();
+                artistSemaphore.release();
+                break;
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
-    
+
+    private void print(String text) {
+        System.out.printf("%s [%d] %s\n", outputColor, id, text);
+    }
 }

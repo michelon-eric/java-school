@@ -4,35 +4,20 @@ import java.util.Random;
 import java.util.concurrent.Semaphore;
 
 public class Main {
-	static final int NUM_CHAIRS = 4;
-    static final int MAX_WAIT_TIME = 5000;
-    static final int MAX_DRAWING_TIME = 3000;
 
-    private static Semaphore chairsSemaphore;
-    private static Semaphore artistSemaphore;
+    private final static Semaphore chairsSemaphore = new Semaphore(Data.NUM_CHAIRS);
+    private final static Semaphore artistSemaphore = new Semaphore(1);
 
-	public static void main(String[] args) {
-		chairsSemaphore = new Semaphore(NUM_CHAIRS);
-        artistSemaphore = new Semaphore(1);
+    public static void main(String[] args) {
+        Random rng = new Random();
+        int numCustomers = 10 + rng.nextInt(90);
 
-		Thread artistThread = new Thread(new StreetArtist(artistSemaphore, chairsSemaphore));
-		artistThread.start();
-
-		Random random = new Random();
-        int customerCount = 0;
-
-		while (true) {
-            int waitTime = random.nextInt(MAX_WAIT_TIME);
-
+        for (int i = 0; i < numCustomers; i++) {
+            new Thread(new Customer(i, chairsSemaphore, artistSemaphore)).start();
             try {
-                Thread.sleep(waitTime);
+                Thread.sleep(rng.nextInt(1000));
             } catch (InterruptedException e) {
-                e.printStackTrace();
             }
-
-           new Thread(new Customer(customerCount, chairsSemaphore, artistSemaphore)).start();
-
-            customerCount++;
         }
-	}
+    }
 }
